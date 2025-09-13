@@ -1,0 +1,74 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1 class="login-title">Bienvenido a Konekta</h1>
+      <p class="login-slogan">Conectando oportunidades, creando futuro.</p>
+    </div>
+
+    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email" class="form-label">Email</label>
+        <div class="input-wrapper">
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="Ingresa tu email"
+            class="form-input"
+            [class.input-error]="email?.invalid && email?.touched">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        </div>
+        <div *ngIf="email?.invalid && email?.touched" class="error-message">
+          <span *ngIf="email?.errors?.['required']">El email es requerido</span>
+          <span *ngIf="email?.errors?.['email']">Email inválido</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Contraseña</label>
+        <div class="input-wrapper">
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            placeholder="Ingresa tu contraseña"
+            class="form-input"
+            [class.input-error]="password?.invalid && password?.touched">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <circle cx="12" cy="16" r="1"></circle>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <div *ngIf="password?.invalid && password?.touched" class="error-message">
+          <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
+          <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <app-buttom
+          type="submit"
+          [disabled]="loginForm.invalid"
+          [loading]="isPending"
+          text="Iniciar sesión"
+          loadingText="Iniciando sesión..."
+          variant="primary"
+          size="medium"
+          class="login-button"
+          (onClick)="onSubmit()">
+        </app-buttom>
+      </div>
+    </form>
+
+    <div class="signup-section">
+      <div class="divider">
+        <span class="divider-text">¿No tienes cuenta?</span>
+      </div>
+      <a href="/signup" class="signup-link">Regístrate aquí</a>
+    </div>
+  </div>
+</div>

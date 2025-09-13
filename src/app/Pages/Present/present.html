@@ -1,0 +1,27 @@
+<section class="present-page">
+  <main class="present-container">
+    <header class="present-header">
+      <h1>Actualidad</h1>
+      <p class="lead">Eventos que están por iniciar o en curso ahora mismo.</p>
+    </header>
+
+    <div *ngIf="loading()" class="loading-box">Cargando eventos...</div>
+    <div *ngIf="error()" class="error-box">{{ error() }}</div>
+
+    <div *ngIf="!loading() && !error()" class="cards" >
+      <div *ngIf="activeUpcoming().length === 0" class="empty">No hay eventos próximos ni en curso.</div>
+      <div class="event-card" *ngFor="let ev of activeUpcoming()">
+        <div class="top-row">
+          <h2>{{ ev.title }}</h2>
+          <span class="badge" [class.live]="ev.startDate">{{ ev.startDate ? (ev.startDate | date:'shortDate') : 'Sin fecha' }}</span>
+        </div>
+        <p class="excerpt">{{ ev.content | slice:0:160 }}<span *ngIf="(ev.content||'').length>160">...</span></p>
+        <div class="meta-row">
+          <span *ngIf="ev.startDate">🟢 Inicio: {{ ev.startDate | date:'short' }}</span>
+          <span *ngIf="ev.endDate">🏁 Fin: {{ ev.endDate | date:'short' }}</span>
+          <span *ngIf="ev.location">📍 {{ ev.location }}</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>

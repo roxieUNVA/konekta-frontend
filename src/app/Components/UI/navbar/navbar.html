@@ -1,0 +1,93 @@
+<nav class="navbar" role="navigation" aria-label="Principal">
+  <div class="navbar-container">
+    <!-- Logo y marca -->
+    <div class="navbar-brand" (click)="navigateToHome()">
+      <span class="navbar-title">KONEKTA</span>
+    </div>
+
+    <!-- Botón hamburguesa (solo móvil) -->
+    <button
+      class="navbar-toggle"
+      type="button"
+      aria-label="Menú"
+      [attr.aria-expanded]="mobileMenuOpen"
+      aria-controls="primary-menu"
+      (click)="toggleMobileMenu()"
+    >
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+
+    <!-- Menú de navegación -->
+    <div class="navbar-menu" id="primary-menu" [class.open]="mobileMenuOpen">
+      <ul class="navbar-nav" (click)="closeMobileMenu()">
+        <!-- Opción pública: Inicio -->
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="isActiveRoute('/inicio') || isActiveRoute('/')"
+            (click)="navigateToHome()"
+            >Inicio</a
+          >
+        </li>
+
+        <!-- Opciones solo para usuarios autenticados -->
+        <li class="nav-item" *ngIf="isAuthenticated">
+          <a
+            class="nav-link"
+            [class.active]="isActiveRoute('/events')"
+            (click)="navigateToEvents()"
+            >Eventos</a
+          >
+        </li>
+
+        <li class="nav-item" *ngIf="isAuthenticated">
+          <a
+            class="nav-link"
+            [class.active]="isActiveRoute('/present')"
+            (click)="navigateToNews()"
+            >Actualidad</a
+          >
+        </li>
+
+        <!-- Opción pública: Modo de uso -->
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="isActiveRoute('/modo-de-uso')"
+            (click)="navigateToUsage()"
+            >Modo de uso</a
+          >
+        </li>
+
+        <!-- Acciones directas en mobile: Perfil / Cerrar sesión -->
+        <li class="nav-item mobile-only" *ngIf="isAuthenticated">
+          <button class="nav-button" (click)="navigateToUser()">Perfil</button>
+        </li>
+        <li class="nav-item mobile-only" *ngIf="isAuthenticated">
+          <button class="nav-button logout" (click)="logout()">Cerrar sesión</button>
+        </li>
+
+        <!-- Icono de perfil, solo para usuarios autenticados -->
+        <li class="nav-item profile-icon" *ngIf="isAuthenticated">
+          <a class="nav-link profile-link" (click)="toggleProfileMenu($event)" #profileLink>
+            <span class="profile-circle">{{ userNameInitial }}</span>
+          </a>
+
+          <!-- Menú desplegable de perfil -->
+          <div class="profile-dropdown" *ngIf="showProfileMenu" #profileMenu (click)="$event.stopPropagation()">
+            <ul>
+              <li>
+                <button class="dropdown-btn" (click)="navigateToUser()">Perfil</button>
+              </li>
+              <li>
+                <button class="dropdown-btn logout-btn" (click)="logout()">Cerrar sesión</button>
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

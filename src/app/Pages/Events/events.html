@@ -1,0 +1,654 @@
+<section class="post-view-container">
+
+  <!-- Notification System -->
+  <div
+    *ngIf="notification()"
+    class="notification"
+    [ngClass]="'notification--' + notification()!.type"
+    (click)="closeNotification()"
+  >
+    <div class="notification__content">
+      <span class="notification__icon">
+        <i *ngIf="notification()!.type === 'success'">✓</i>
+        <i *ngIf="notification()!.type === 'error'">✕</i>
+        <i *ngIf="notification()!.type === 'info'">ℹ</i>
+      </span>
+      <span class="notification__message">{{ notification()!.message }}</span>
+    </div>
+    <button class="notification__close" (click)="closeNotification()">×</button>
+  </div>
+
+  <!-- Header Section -->
+  <header class="post-view-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="header-title">{{ onlyActiveUpcoming ? 'Eventos en curso' : 'Todos los eventos' }}</h1>
+          <p class="header-subtitle">
+            Descubre los últimos eventos y novedades de la comunidad
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Floating Action Button for Creating Posts (More Visible) -->
+  <div
+    *ngIf="hasUser() && isAdmin() && !onlyActiveUpcoming"
+    class="floating-create-btn"
+    (click)="openCreateModal()"
+    title="Crear nuevo post"
+  >
+    <i class="fab-icon">+</i>
+  </div>
+
+  <!-- Alternative: Always show button for logged users -->
+  <div
+    *ngIf="hasUser() && isAdmin() && !onlyActiveUpcoming && (!posts() || posts()!.length === 0)"
+    class="create-post-prompt"
+  >
+    <div class="container">
+      <div class="prompt-content">
+        <h3>¡Comparte tu primer post!</h3>
+        <p>Sé el primero en compartir algo interesante con la comunidad</p>
+        <button class="btn btn--black btn--large" (click)="openCreateModal()">
+          Crear mi primer post
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container main-content">
+    <!-- Loading State -->
+    <div *ngIf="postsLoading()" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando posts...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="postsError()" class="error-state">
+      <div class="error-icon">⚠️</div>
+      <p>{{ postsError() }}</p>
+      <button class="btn btn--secondary" (click)="loadPosts()">
+        Intentar de nuevo
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="events-search" *ngIf="!postsLoading()">
+      <div class="search-wrapper">
+        <div class="icon-container">
+          <img src="ic_fluent_search_24_filled_white.png" alt="Buscar" class="search-icon" />
+        </div>
+        <input
+          type="text"
+          placeholder="Buscar eventos por título, contenido, autor..."
+          [(ngModel)]="searchValue"
+          (ngModelChange)="onSearchChange(searchValue)"
+        />
+        <button *ngIf="searchTerm()" class="clear" (click)="clearSearch()">×</button>
+      </div>
+      <div class="result-count" *ngIf="searchTerm()">{{ filteredPosts().length }} resultado(s)</div>
+    </div>
+
+    <!-- Empty state específico para Actualidad (sin eventos activos o próximos) -->
+    <div
+      *ngIf="onlyActiveUpcoming && !postsLoading() && filteredPosts().length === 0"
+      class="active-upcoming-empty"
+    >
+      <div class="empty-banner">
+        <div class="banner-content">
+          <div class="icon-wrap" aria-hidden="true">🕒</div>
+          <h2 class="banner-title">No hay eventos en curso</h2>
+          <p class="banner-text">
+            En este momento no hay eventos activos ni próximos programados. Vuelve más tarde o explora el historial de eventos para descubrir experiencias pasadas.
+          </p>
+          <div class="banner-actions">
+            <button class="btn btn--black" (click)="navigateToAllEvents()">Ver todos los eventos</button>
+            <button *ngIf="hasUser() && isAdmin()" class="btn btn--secondary" (click)="openCreateModal()">Crear un evento</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts List -->
+    <div *ngIf="posts() && !postsLoading()" class="posts-container">
+      <div *ngFor="let post of filteredPosts()" class="post-card">
+        <!-- Imagen del post - Primero -->
+        <div class="post-image" *ngIf="post.imageUrl">
+          <img [src]="post.imageUrl" [alt]="post.title" (error)="onImageError($event)" />
+        </div>
+
+        <!-- Post Header (card layout updated to match design) -->
+        <div class="post-card__header">
+          <h2 class="post-title">{{ post.title }}</h2>
+
+          <!-- Estado del evento -->
+          <div class="event-status-badge" [ngClass]="getEventStatusClass(post)" *ngIf="post.startDate">
+            {{ getEventStatusText(post) }}
+          </div>
+
+          <div class="post-subtitle">Creado por: {{ getPostAuthorName(post) }}</div>
+          <div *ngIf="post.author" class="post-owner"><strong>Organizador:</strong> {{ post.author }}</div>
+
+          <div class="post-card__meta">
+            <p class="post-preview">
+              {{ post.content | slice : 0 : 200 }}
+              <span *ngIf="(post.content || '').length > 200" class="text-fade">...</span>
+            </p>
+
+            <div class="meta-row">
+              <span class="meta-item" *ngIf="post.startDate"><img src="ic_fluent_calendar_ltr_24_filled.png" alt="Inicio" class="meta-icon"> <strong>Inicio:</strong> {{ formatDate(post.startDate || '') }}</span>
+              <span class="meta-item" *ngIf="post?.endDate"><img src="ic_fluent_calendar_cancel_24_filled.png" alt="Fin" class="meta-icon"> <strong>Fin:</strong> {{ formatDate(post?.endDate || '') }}</span>
+              <span class="meta-item" *ngIf="post.location"><img src="ic_fluent_map_24_filled.png" alt="Lugar" class="meta-icon"> <strong>Lugar:</strong> {{ post.location }}</span>
+              <span class="meta-item" *ngIf="post.capacity !== undefined"><img src="ic_fluent_people_community_add_24_filled.png" alt="Capacidad" class="meta-icon"> <strong>Capacidad:</strong> {{ post.capacity }}</span>
+            </div>
+
+            <div class="tags" *ngIf="post.category">
+              <span class="tag" *ngFor="let cat of getCategoriesArray(post.category)">#{{ cat }}</span>
+            </div>
+          </div>
+
+          <!-- Admin Menu (absolute top-right) -->
+          <div *ngIf="hasUser() && isAdmin()" class="post-menu" [class.post-menu--active]="isPostMenuActive(getPostId(post))">
+            <button class="post-menu__trigger" (click)="togglePostMenu(getPostId(post))" [attr.aria-label]="'Opciones para ' + post.title"><img src="ic_fluent_more_vertical_24_filled.png" alt="Más opciones" class="menu-icon"></button>
+            <div class="post-menu__dropdown" *ngIf="isPostMenuActive(getPostId(post))">
+              <button class="post-menu__item" (click)="openEditModal(post)"><img src="ic_fluent_edit_24_filled.png" alt="Editar" class="menu-item-icon"> Editar</button>
+              <button class="post-menu__item post-menu__item--danger" (click)="deletePost(getPostId(post))"><img src="ic_fluent_delete_24_filled.png" alt="Eliminar" class="menu-item-icon"> Eliminar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post Actions: View post button -->
+        <div class="post-card__actions">
+          <button
+            class="btn btn--black btn--small"
+            (click)="viewPostDetail(post)"
+            title="Ver post completo"
+          >
+            Ver más
+          </button>
+        </div>
+
+        <!-- Inline Comments Panel -->
+        <div
+          class="inline-comments"
+          [class.inline-comments--open]="expandedPostId() === getPostId(post)"
+        >
+          <div class="inline-comments__inner">
+            <div
+              *ngIf="postCommentsLoading()[getPostId(post)]"
+              class="comments-loading-inline"
+            >
+              <div class="spinner-small"></div>
+              <span>Cargando comentarios...</span>
+            </div>
+
+            <div
+              *ngIf="postCommentsError()[getPostId(post)]"
+              class="comments-error-inline"
+            >
+              <span>{{ postCommentsError()[getPostId(post)] }}</span>
+            </div>
+
+            <div
+              *ngIf="
+                postComments()[getPostId(post)] &&
+                !postCommentsLoading()[getPostId(post)]
+              "
+              class="comments-list-inline"
+            >
+              <!-- Comentarios principales -->
+              <div
+                *ngFor="let comment of getMainComments(getPostId(post))"
+                class="comment-thread"
+              >
+                <!-- Comentario principal -->
+                <div
+                  class="comment-item comment-item--main"
+                  [class.comment-item--clickable]="getRepliesForComment(comment._id || comment.uuid || '', getPostId(post)).length > 0"
+                  (click)="toggleCommentExpansion(comment._id || comment.uuid || '')"
+                >
+                  <div class="comment-header">
+                    <span class="comment-author"
+                      >Por: {{ getCommentAuthorName(comment) }}</span
+                    >
+                    <span class="comment-date">{{
+                      formatDate(comment.createdAt || "")
+                    }}</span>
+
+                    <!-- Indicador de respuestas -->
+                    <span
+                      class="replies-count"
+                      *ngIf="getRepliesForComment(comment._id || comment.uuid || '', getPostId(post)).length > 0"
+                    >
+                      {{ getRepliesForComment(comment._id || comment.uuid || '', getPostId(post)).length }} respuesta(s)
+                    </span>
+
+                    <div
+                      class="comment-menu"
+                      [class.comment-menu--active]="
+                        activeCommentMenuId() ===
+                        (comment._id || comment.uuid || '')
+                      "
+                    >
+                      <button
+                        class="comment-menu__trigger"
+                        (click)="
+                          $event.stopPropagation();
+                          toggleCommentMenu(comment._id || comment.uuid || '')
+                        "
+                      >
+                        ⋮
+                      </button>
+                      <div
+                        class="comment-menu__dropdown"
+                        *ngIf="
+                          activeCommentMenuId() ===
+                          (comment._id || comment.uuid || '')
+                        "
+                      >
+                        <button
+                          class="comment-menu__item"
+                          *ngIf="canEditOrDeleteComment(comment)"
+                          (click)="startEditComment(comment)"
+                        >
+                          <img src="ic_fluent_edit_24_filled.png" alt="Editar" class="menu-item-icon"> Editar
+                        </button>
+                        <button
+                          class="comment-menu__item comment-menu__item--danger"
+                          *ngIf="canEditOrDeleteComment(comment)"
+                          (click)="deleteComment(comment)"
+                        >
+                          <img src="ic_fluent_delete_24_filled.png" alt="Eliminar" class="menu-item-icon"> Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="comment-content">
+                    <ng-container
+                      *ngIf="
+                        editingCommentId() === (comment._id || comment.uuid);
+                        else showComment
+                      "
+                    >
+                      <textarea
+                        class="comment-edit-input"
+                        [(ngModel)]="editCommentDraft"
+                      ></textarea>
+                      <div class="comment-edit-actions">
+                        <button
+                          class="btn btn--secondary btn--small"
+                          (click)="cancelEditComment()"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          class="btn btn--black btn--small"
+                          (click)="saveEditComment(comment)"
+                        >
+                          Guardar
+                        </button>
+                      </div>
+                    </ng-container>
+                    <ng-template #showComment>
+                      <p>{{ comment.content }}</p>
+                    </ng-template>
+                  </div>
+
+                  <!-- Botón para responder -->
+                  <div class="comment-actions" *ngIf="hasUser()">
+                    <button
+                      class="btn-reply"
+                      (click)="$event.stopPropagation(); toggleReply(comment._id || comment.uuid || '')"
+                    >
+                      <img src="ic_fluent_arrow_reply_24_filled.png" alt="Responder" class="reply-icon"> Responder
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Respuestas (se muestran cuando el comentario está expandido) -->
+                <div
+                  class="comment-replies"
+                  *ngIf="isCommentExpanded(comment._id || comment.uuid || '')"
+                >
+                  <div
+                    *ngFor="let reply of getRepliesForComment(comment._id || comment.uuid || '', getPostId(post))"
+                    class="comment-item comment-item--reply"
+                  >
+                    <div class="comment-header">
+                      <span class="comment-author"
+                        >Por: {{ getCommentAuthorName(reply) }}</span
+                      >
+                      <span class="comment-date">{{
+                        formatDate(reply.createdAt || "")
+                      }}</span>
+                      <div
+                        class="comment-menu"
+                        [class.comment-menu--active]="
+                          activeCommentMenuId() ===
+                          (reply._id || reply.uuid || '')
+                        "
+                      >
+                        <button
+                          class="comment-menu__trigger"
+                          (click)="
+                            toggleCommentMenu(reply._id || reply.uuid || '')
+                          "
+                        >
+                          ⋮
+                        </button>
+                        <div
+                          class="comment-menu__dropdown"
+                          *ngIf="
+                            activeCommentMenuId() ===
+                            (reply._id || reply.uuid || '')
+                          "
+                        >
+                          <button
+                            class="comment-menu__item"
+                            *ngIf="canEditOrDeleteComment(reply)"
+                            (click)="startEditComment(reply)"
+                          >
+                            <img src="ic_fluent_edit_24_filled.png" alt="Editar" class="menu-item-icon"> Editar
+                          </button>
+                          <button
+                            class="comment-menu__item comment-menu__item--danger"
+                            *ngIf="canEditOrDeleteComment(reply)"
+                            (click)="deleteComment(reply)"
+                          >
+                            <img src="ic_fluent_delete_24_filled.png" alt="Eliminar" class="menu-item-icon"> Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="comment-content">
+                      <ng-container
+                        *ngIf="
+                          editingCommentId() === (reply._id || reply.uuid);
+                          else showReply
+                        "
+                      >
+                        <textarea
+                          class="comment-edit-input"
+                          [(ngModel)]="editCommentDraft"
+                        ></textarea>
+                        <div class="comment-edit-actions">
+                          <button
+                            class="btn btn--secondary btn--small"
+                            (click)="cancelEditComment()"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            class="btn btn--black btn--small"
+                            (click)="saveEditComment(reply)"
+                          >
+                            Guardar
+                          </button>
+                        </div>
+                      </ng-container>
+                      <ng-template #showReply>
+                        <p>{{ reply.content }}</p>
+                      </ng-template>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Formulario para responder -->
+                <div
+                  class="reply-form"
+                  *ngIf="activeReplyId() === (comment._id || comment.uuid || '')"
+                >
+                  <textarea
+                    class="comment-form__input reply-input"
+                    [ngModel]="replyDrafts()[comment._id || comment.uuid || '']"
+                    (ngModelChange)="onReplyDraftChange(comment._id || comment.uuid || '', $event)"
+                    placeholder="Escribe tu respuesta..."
+                    rows="2"
+                  ></textarea>
+                  <div class="comment-form__actions">
+                    <button
+                      class="btn btn--secondary btn--small"
+                      (click)="cancelReply()"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      class="btn btn--black btn--small"
+                      (click)="submitReply(comment._id || comment.uuid || '', getPostId(post))"
+                      [disabled]="!(replyDrafts()[comment._id || comment.uuid || ''] || '').trim()"
+                    >
+                      Responder
+                    </button>
+                  </div>
+                </div>
+              </div>              <div
+                *ngIf="postComments()[getPostId(post)]?.length === 0"
+                class="comments-empty-inline"
+              >
+                <p>Aún no hay comentarios. ¡Sé el primero!</p>
+              </div>
+            </div>
+
+            <div class="comment-form-inline">
+              <!-- Show form UI always; enable actions only for logged users -->
+              <textarea
+                class="comment-form__input"
+                [ngModel]="commentDrafts()[getPostId(post)]"
+                (ngModelChange)="onDraftChange(getPostId(post), $event)"
+                [attr.data-post-id]="getPostId(post)"
+                [placeholder]="
+                  hasUser()
+                    ? 'Escribe tu comentario...'
+                    : 'Inicia sesión para comentar...'
+                "
+                rows="2"
+                [disabled]="!hasUser()"
+              ></textarea>
+              <div class="comment-form__actions">
+                <button
+                  *ngIf="hasUser()"
+                  class="btn btn--black btn--small"
+                  (click)="submitComment(getPostId(post))"
+                  [disabled]="!(commentDrafts()[getPostId(post)] || '').trim()"
+                >
+                  Comentar
+                </button>
+                <button
+                  *ngIf="!hasUser()"
+                  class="btn btn--secondary btn--small"
+                  (click)="
+                    showNotification(
+                      'Debes iniciar sesión para comentar',
+                      'info'
+                    )
+                  "
+                >
+                  Iniciar sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="posts()?.length === 0" class="empty-state">
+        <div class="empty-state__icon"><img src="ic_fluent_notepad_person_24_filled.png" alt="Posts" class="empty-icon"></div>
+        <h3>No hay posts disponibles</h3>
+        <p>¡Sé el primero en crear un post!</p>
+      </div>
+    </div>
+
+    <!-- Post Detail Modal removed: comments and full post now available inline per post -->
+
+    <!-- Create Post Modal -->
+    <div
+      *ngIf="showCreateModal()"
+      class="modal-overlay"
+      (click)="closeCreateModal()"
+    >
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal__header">
+          <h2 class="modal__title">
+            <img *ngIf="!editingPost()" src="ic_fluent_add_24_filled.png" alt="Crear" class="modal-icon">
+            <img *ngIf="editingPost()" src="ic_fluent_edit_24_filled.png" alt="Editar" class="modal-icon">
+            {{ editingPost() ? 'Editar post' : (isFollowUpMode() ? 'Crear Seguimiento' : 'Crear nuevo post') }}
+          </h2>
+          <button
+            class="modal__close"
+            (click)="closeCreateModal()"
+            aria-label="Cerrar"
+          >
+            <img src="ic_fluent_dismiss_24_filled.png" alt="Cerrar" class="close-icon">
+          </button>
+        </div>
+
+        <div class="modal__body">
+          <form class="post-form" (ngSubmit)="editingPost() ? updatePost() : createPost()">
+            <div class="form-group">
+              <label class="form-label" for="post-title">Título *</label>
+              <input
+                id="post-title"
+                type="text"
+                class="form-input"
+                [(ngModel)]="newPostTitle"
+                name="title"
+                placeholder="Ingresa un título llamativo..."
+                maxlength="100"
+                required
+              />
+              <div class="form-counter">{{ newPostTitle().length }}/100</div>
+            </div>
+
+
+
+            <div class="form-group" *ngIf="!isFollowUpMode()">
+              <label class="form-label" for="post-author">Autor / Organizador</label>
+              <input id="post-author" type="text" class="form-input" [(ngModel)]="newPostAuthor" name="author" placeholder="Nombre del organizador" />
+            </div>
+
+            <div class="form-row" *ngIf="!isFollowUpMode()">
+              <div class="form-group">
+                <label class="form-label" for="post-start">Fecha de inicio</label>
+                <input id="post-start" type="datetime-local" class="form-input" [(ngModel)]="newPostStartDate" name="startDate" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="post-end">Fecha fin</label>
+                <input id="post-end" type="datetime-local" class="form-input" [(ngModel)]="newPostEndDate" name="endDate" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="post-location">
+                  Lugar{{ isFollowUpMode() ? ' (opcional, solo si cambia)' : '' }}
+                </label>
+                <input id="post-location" type="text" class="form-input" [(ngModel)]="newPostLocation" name="location" [placeholder]="isFollowUpMode() ? 'Nuevo lugar si cambia...' : 'Lugar del evento...'" />
+              </div>
+            </div>
+
+            <div class="form-row" *ngIf="!isFollowUpMode()">
+              <div class="form-group">
+                <label class="form-label" for="post-category">Categorías</label>
+                <div class="category-input-wrapper">
+                  <!-- Selected categories display -->
+                  <div class="selected-categories" *ngIf="selectedCategories().length > 0">
+                    <span *ngFor="let category of selectedCategories()" class="category-tag">
+                      {{ category }}
+                      <button type="button" class="remove-category" (click)="removeCategory(category)"><img src="ic_fluent_dismiss_24_filled.png" alt="Remover" class="remove-icon"></button>
+                    </span>
+                  </div>
+                  <input
+                    id="post-category"
+                    type="text"
+                    class="form-input"
+                    [(ngModel)]="newPostCategory"
+                    name="category"
+                    (input)="onCategoryInput($event)"
+                    (focus)="onCategoryFocus()"
+                    (blur)="onCategoryBlur()"
+                    placeholder="Escribe o selecciona categorías..."
+                    autocomplete="off"
+                  />
+                  <div class="category-suggestions" *ngIf="showCategorySuggestions() && filteredCategorySuggestions().length > 0">
+                    <div
+                      *ngFor="let suggestion of filteredCategorySuggestions()"
+                      class="suggestion-item"
+                      (click)="selectCategory(suggestion)"
+                    >
+                      {{ suggestion }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="post-capacity">Cupos</label>
+                <input id="post-capacity" type="number" class="form-input" [(ngModel)]="newPostCapacity" name="capacity" min="0" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="post-image-file">Imagen</label>
+              <input
+                id="post-image-file"
+                type="file"
+                class="form-input"
+                (change)="onImageSelect($event)"
+                accept="image/*"
+              />
+              <small class="form-help">Selecciona una imagen para el post (opcional). Formatos: JPG, PNG, GIF</small>
+              <div class="image-preview" *ngIf="selectedImagePreview()">
+                <img [src]="selectedImagePreview()" alt="Vista previa" class="preview-img">
+                <button type="button" class="remove-image" (click)="removeSelectedImage()">✕</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="post-content">Contenido *</label>
+              <textarea
+                id="post-content"
+                class="form-textarea"
+                [(ngModel)]="newPostContent"
+                name="content"
+                placeholder="Escribe el contenido de tu post..."
+                rows="6"
+                maxlength="2000"
+                required
+              >
+              </textarea>
+              <div class="form-counter">{{ newPostContent().length }}/2000</div>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn btn--secondary"
+                (click)="closeCreateModal()"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                class="btn btn--black"
+                [disabled]="editingPost() ? !isEditingChanged() : (!newPostTitle().trim() || !newPostContent().trim())"
+              >
+                {{ editingPost() ? 'Guardar cambios' : (isFollowUpMode() ? 'Crear Seguimiento' : 'Crear Post') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Backdrop for closing menus (mobile) -->
+    <div
+      *ngIf="activeMenuPostId()"
+      class="menu-backdrop"
+      (click)="closeAllMenus()"
+    ></div>
+  </main>
+</section>

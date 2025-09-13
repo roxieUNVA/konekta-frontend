@@ -1,0 +1,47 @@
+<div class="user-page" *ngIf="!loading; else loadingTpl">
+  <div class="profile-card">
+    <header class="profile-header">
+      <div class="avatar" aria-hidden="true">{{ form?.name?.charAt(0) || 'U' }}</div>
+      <div class="title-group">
+        <h1 class="profile-title">Perfil</h1>
+        <p class="profile-subtitle">Gestiona tu información personal</p>
+      </div>
+    </header>
+
+    <form (ngSubmit)="onSave()" *ngIf="form" class="profile-form" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label for="name">Nombre</label>
+          <input id="name" type="text" [(ngModel)]="form.name" (ngModelChange)="onFieldChange()" name="name" required [disabled]="!editing" />
+          <small class="field-hint" *ngIf="editing">Tu nombre visible en publicaciones y comentarios.</small>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" [(ngModel)]="form.email" (ngModelChange)="onFieldChange()" name="email" required [disabled]="!editing" />
+          <small class="field-hint" *ngIf="editing">Usado para acceder a la plataforma.</small>
+        </div>
+      </div>
+
+      <div class="actions" *ngIf="!editing; else editingActions">
+        <button type="button" class="btn btn--primary" (click)="enableEdit()">Editar</button>
+        <button type="button" class="btn btn--danger btn--subtle" (click)="onDelete()" [disabled]="deleting">Eliminar cuenta</button>
+      </div>
+      <ng-template #editingActions>
+        <div class="actions editing">
+          <button type="submit" class="btn btn--primary" [disabled]="saving || !dirty">{{ saving ? 'Guardando...' : 'Guardar cambios' }}</button>
+          <button type="button" class="btn btn--neutral" (click)="disableEdit()" [disabled]="saving">Cancelar</button>
+          <button type="button" class="btn btn--danger btn--subtle" (click)="onDelete()" [disabled]="deleting">Eliminar cuenta</button>
+        </div>
+      </ng-template>
+    </form>
+
+    <div class="messages">
+      <div class="alert alert--error" *ngIf="error">{{ error }}</div>
+      <div class="alert alert--success" *ngIf="saved">Cambios guardados</div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading">Cargando...</div>
+</ng-template>

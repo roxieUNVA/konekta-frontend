@@ -1,0 +1,438 @@
+<section class="post-detail-container">
+  <!-- Notification System -->
+  <div
+    *ngIf="notification()"
+    class="notification"
+    [ngClass]="'notification--' + notification()!.type"
+    (click)="closeNotification()"
+  >
+    <div class="notification__content">
+      <span class="notification__icon">
+        <i *ngIf="notification()!.type === 'success'">✓</i>
+        <i *ngIf="notification()!.type === 'error'">✕</i>
+        <i *ngIf="notification()!.type === 'info'">ℹ</i>
+      </span>
+      <span class="notification__message">{{ notification()!.message }}</span>
+    </div>
+    <button class="notification__close" (click)="closeNotification()">×</button>
+  </div>
+
+  <!-- header removed: back button and comments toggle moved/removed per design request -->
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando post...</p>
+  </div>
+
+  <!-- Main content -->
+  <div *ngIf="!isLoading() && currentPost()" class="post-detail-content">
+
+    <!-- Three column layout: Main Post | Follow-ups (if any) | Comments (if shown) -->
+    <div class="content-layout"
+         [ngClass]="{
+           'with-comments': showComments(),
+           'with-followups': followUpPosts().length > 0
+         }">
+
+      <!-- First column: Main Event Post -->
+      <div class="main-post-column">
+        <!-- Main Post -->
+        <article class="post-card main-post" [class.with-hero]="currentPost()!.imageUrl">
+
+            <!-- Hero con imagen y overlay si existe imagen -->
+            <div class="hero-image-section" *ngIf="currentPost()!.imageUrl">
+              <div class="hero-image">
+                <img
+                  [src]="currentPost()!.imageUrl"
+                  [alt]="currentPost()!.title"
+                  (error)="onImageError($event)"
+                />
+                <div class="hero-overlay">
+                  <div class="hero-overlay-content">
+                    <div class="event-status-badge" [ngClass]="'status-' + getEventStatus(currentPost()!)">
+                      {{ getEventStatus(currentPost()!) === 'upcoming' ? 'Próximo' :
+                         getEventStatus(currentPost()!) === 'ongoing' ? 'En curso' :
+                         getEventStatus(currentPost()!) === 'finished' ? 'Finalizado' : 'Sin fecha' }}
+                    </div>
+                    <h1 class="hero-title">{{ currentPost()!.title }}</h1>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contenido con padding después de la imagen -->
+            <div class="post-content-wrapper">
+
+              <!-- Cabecera fallback cuando NO hay imagen -->
+              <div class="post-header" *ngIf="!currentPost()!.imageUrl">
+                <h2 class="post-title">{{ currentPost()!.title }}</h2>
+                <div class="event-status-badge" [ngClass]="'status-' + getEventStatus(currentPost()!)">
+                  {{ getEventStatus(currentPost()!) === 'upcoming' ? 'Próximo' :
+                     getEventStatus(currentPost()!) === 'ongoing' ? 'En curso' :
+                     getEventStatus(currentPost()!) === 'finished' ? 'Finalizado' : 'Sin fecha' }}
+                </div>
+              </div>
+
+              <!-- Descripción principal -->
+              <div class="simple-description">
+                {{ currentPost()!.content }}
+              </div>
+
+              <!-- 5. Información del evento en un solo cuadro -->
+              <div class="event-info-grid">
+                <div class="event-info-card">
+                <div class="info-item" *ngIf="currentPost()!.author">
+                  <span class="info-icon">👤</span>
+                  <div class="info-content">
+                    <span class="info-label">Organizador</span>
+                    <span class="info-value">{{ currentPost()!.author }}</span>
+                  </div>
+                </div>
+
+                <div class="info-item" *ngIf="currentPost()!.createdAt">
+                  <span class="info-icon">📅</span>
+                  <div class="info-content">
+                    <span class="info-label">Publicado</span>
+                    <span class="info-value">{{ currentPost()!.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+
+                <div class="info-item" *ngIf="currentPost()!.startDate">
+                  <span class="info-icon">🚀</span>
+                  <div class="info-content">
+                    <span class="info-label">Fecha de inicio</span>
+                    <span class="info-value">{{ currentPost()!.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+
+                <div class="info-item" *ngIf="currentPost()!.endDate">
+                  <span class="info-icon">🏁</span>
+                  <div class="info-content">
+                    <span class="info-label">Fecha de fin</span>
+                    <span class="info-value">{{ currentPost()!.endDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+
+                <div class="info-item" *ngIf="currentPost()!.location">
+                  <span class="info-icon">📍</span>
+                  <div class="info-content">
+                    <span class="info-label">Ubicación</span>
+                    <span class="info-value">{{ currentPost()!.location }}</span>
+                  </div>
+                </div>
+
+                <div class="info-item" *ngIf="currentPost()!.capacity">
+                  <span class="info-icon">👥</span>
+                  <div class="info-content">
+                    <span class="info-label">Capacidad</span>
+                    <span class="info-value">{{ currentPost()!.capacity }} personas</span>
+                  </div>
+                </div>
+                </div>
+              </div>
+
+              <!-- 6. Categorías en contenedores separados -->
+              <div class="categories-container" *ngIf="currentPost()!.category">
+                <div
+                  *ngFor="let category of getCategoriesArray(currentPost()!.category)"
+                  class="individual-category"
+                >
+                  {{ category }}
+                </div>
+              </div>
+
+              <!-- Post actions -->
+              <div class="post-actions">
+                <button
+                  *ngIf="hasUser() && isAdmin() && canCreateFollowUp(currentPost()!)"
+                  class="btn btn--primary btn--small"
+                  (click)="createFollowUpPost(currentPost()!)"
+                  title="Crear seguimiento del evento"
+                >
+                  🔄 Crear Seguimiento
+                </button>
+                <button
+                  class="btn btn--outline btn--small"
+                  (click)="areCommentsShownForPost(currentPost()!) ? hideComments() : showCommentsForPost(currentPost()!)"
+                  [class.active]="areCommentsShownForPost(currentPost()!)"
+                >
+                  💬 {{ areCommentsShownForPost(currentPost()!) ? 'Ocultar comentarios' : 'Ver comentarios' }}
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Second column: Follow-ups (only if there are follow-ups) -->
+        <div class="follow-ups-column" *ngIf="followUpPosts().length > 0">
+          <!-- Follow-up posts -->
+          <div class="follow-ups">
+            <h3 class="follow-ups-title">Seguimientos del evento</h3>
+
+            <article
+              *ngFor="let followUp of followUpPosts()"
+              class="post-card follow-up-post"
+            >
+              <div class="follow-up-indicator">
+                ↳ Seguimiento
+              </div>
+
+              <div class="post-header">
+                <div class="post-meta">
+                  <h3 class="post-title">{{ followUp.title }}</h3>
+                  <div class="post-info">
+                    <span class="post-author">{{ followUp.author }}</span>
+                    <span class="post-date">{{ followUp.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="post-content">
+                <!-- Updated location if changed -->
+                <div class="event-details" *ngIf="followUp.location && followUp.location !== currentPost()!.location">
+                  <div class="detail-item location-change">
+                    <strong>📍 Nueva ubicación:</strong> {{ followUp.location }}
+                  </div>
+                </div>
+
+                <!-- Follow-up image -->
+                <div class="post-image" *ngIf="followUp.imageUrl">
+                  <img
+                    [src]="followUp.imageUrl"
+                    [alt]="followUp.title"
+                    (error)="onImageError($event)"
+                  />
+                </div>
+
+                <!-- Follow-up content -->
+                <div class="post-text">
+                  {{ followUp.content }}
+                </div>
+
+                <!-- Follow-up actions -->
+                <div class="post-actions">
+                  <button
+                    class="btn btn--outline btn--small"
+                    (click)="areCommentsShownForPost(followUp) ? hideComments() : showCommentsForPost(followUp)"
+                    [class.active]="areCommentsShownForPost(followUp)"
+                  >
+                    💬 {{ areCommentsShownForPost(followUp) ? 'Ocultar comentarios' : 'Ver comentarios' }}
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <!-- Third column: Comments (shown when toggled) -->
+      <div class="comments-column" *ngIf="showComments()">
+        <div class="comments-section">
+          <h3 class="comments-title">Comentarios</h3>
+
+          <!-- Comment creation form -->
+          <div class="comment-form" *ngIf="hasUser()">
+            <div class="reply-indicator" *ngIf="commentToReply()">
+              <span>Respondiendo a: <strong>{{ getCommentAuthorName(commentToReply()!) }}</strong></span>
+              <button class="btn btn--small btn--secondary" (click)="cancelReply()">Cancelar</button>
+            </div>
+
+            <div class="form-group">
+              <textarea
+                [(ngModel)]="newComment"
+                placeholder="Escribe tu comentario..."
+                rows="3"
+                maxlength="500"
+                class="form-control"
+              ></textarea>
+              <div class="form-counter">{{ newComment().length }}/500</div>
+            </div>
+
+            <button
+              class="btn btn--primary"
+              (click)="createComment()"
+              [disabled]="!newComment().trim()"
+            >
+              {{ commentToReply() ? 'Responder' : 'Comentar' }}
+            </button>
+          </div>
+
+          <!-- Comments list -->
+          <div class="comments-list">
+            <div
+              *ngFor="let comment of getMainComments()"
+              class="comment-item"
+            >
+              <!-- Main comment -->
+              <div class="comment">
+                <div class="comment-meta">
+                  <span class="comment-author">{{ getCommentAuthorName(comment) }}</span>
+                  <span class="comment-date">{{ comment.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="comment-content">{{ comment.content }}</div>
+                <div class="comment-actions">
+                  <button
+                    class="btn btn--link comment-reply-btn"
+                    (click)="replyToComment(comment)"
+                    *ngIf="hasUser()"
+                  >
+                    Responder
+                  </button>
+                  <!-- Inline edit form for main comment -->
+                  <div *ngIf="editingCommentId() === getCommentId(comment)" class="edit-inline-form">
+                    <textarea [(ngModel)]="editCommentContent" rows="3" maxlength="500" class="form-control"></textarea>
+                    <div class="edit-actions">
+                      <button class="btn btn--primary btn--small" (click)="saveEditComment()" [disabled]="!editCommentContent().trim()">Guardar</button>
+                      <button class="btn btn--secondary btn--small" (click)="cancelEditComment()">Cancelar</button>
+                    </div>
+                  </div>
+                  <button
+                    *ngIf="getRepliesForComment(getCommentId(comment)).length > 0"
+                    class="btn btn--link comment-toggle-btn"
+                    (click)="toggleCommentExpansion(getCommentId(comment))"
+                  >
+                    {{ isCommentExpanded(getCommentId(comment)) ? 'Ocultar' : 'Ver' }}
+                    {{ getRepliesForComment(getCommentId(comment)).length }}
+                    {{ getRepliesForComment(getCommentId(comment)).length === 1 ? 'respuesta' : 'respuestas' }}
+                  </button>
+                  <!-- Botón menú acciones (moved after toggle) -->
+                  <div class="comment-actions-menu" *ngIf="isCommentOwner(comment)">
+                    <button class="btn btn--link actions-toggle" (click)="toggleActionsMenu(comment)" type="button">
+                      ⋮
+                    </button>
+                    <div class="actions-dropdown" *ngIf="openActionsCommentId() === getCommentId(comment)">
+                      <button class="dropdown-item" (click)="startEditComment(comment)">Editar</button>
+                      <button class="dropdown-item danger" (click)="deleteComment(comment)">Eliminar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Replies -->
+              <div
+                *ngIf="isCommentExpanded(getCommentId(comment)) && getRepliesForComment(getCommentId(comment)).length > 0"
+                class="comment-replies"
+              >
+                <div
+                  *ngFor="let reply of getRepliesForComment(getCommentId(comment))"
+                  class="comment reply"
+                >
+                  <div class="comment-meta">
+                    <span class="comment-author">{{ getCommentAuthorName(reply) }}</span>
+                    <span class="comment-date">{{ reply.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  <div class="comment-content">{{ reply.content }}</div>
+                  <div class="comment-actions reply-actions" *ngIf="isCommentOwner(reply)">
+                    <button class="btn btn--link actions-toggle" (click)="toggleActionsMenu(reply)" type="button">⋮</button>
+                    <div class="actions-dropdown" *ngIf="openActionsCommentId() === getCommentId(reply)">
+                      <button class="dropdown-item" (click)="startEditComment(reply)">Editar</button>
+                      <button class="dropdown-item danger" (click)="deleteComment(reply)">Eliminar</button>
+                    </div>
+                  </div>
+                  <div *ngIf="editingCommentId() === getCommentId(reply)" class="edit-inline-form reply-edit">
+                    <textarea [(ngModel)]="editCommentContent" rows="3" maxlength="500" class="form-control"></textarea>
+                    <div class="edit-actions">
+                      <button class="btn btn--primary btn--small" (click)="saveEditComment()" [disabled]="!editCommentContent().trim()">Guardar</button>
+                      <button class="btn btn--secondary btn--small" (click)="cancelEditComment()">Cancelar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="getMainComments().length === 0" class="empty-comments">
+              <p>Aún no hay comentarios. ¡Sé el primero en comentar!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Follow-up Creation Modal -->
+  <div *ngIf="showCreateModal()" class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ isFollowUpMode() ? 'Crear Seguimiento' : 'Crear Post' }}</h3>
+        <button class="close-btn" (click)="closeCreateModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="createPost()" #postForm="ngForm">
+          <!-- Título -->
+          <div class="form-group">
+            <label for="title">Título *</label>
+            <input
+              id="title"
+              type="text"
+              [(ngModel)]="newPostTitle"
+              name="title"
+              required
+              class="form-control"
+              placeholder="Título del seguimiento"
+            />
+          </div>
+
+          <!-- Contenido -->
+          <div class="form-group">
+            <label for="content">Contenido *</label>
+            <textarea
+              id="content"
+              [(ngModel)]="newPostContent"
+              name="content"
+              required
+              rows="6"
+              class="form-control"
+              placeholder="Describe las actualizaciones del evento..."
+            ></textarea>
+          </div>
+
+          <!-- Imagen -->
+          <div class="form-group">
+            <label for="imageFile">Imagen</label>
+            <input
+              id="imageFile"
+              type="file"
+              (change)="onImageSelect($event)"
+              class="form-control"
+              accept="image/*"
+            />
+            <small class="form-help">Selecciona una imagen para el seguimiento (opcional)</small>
+            <div class="image-preview" *ngIf="selectedImagePreview()">
+              <img [src]="selectedImagePreview()" alt="Vista previa" class="preview-img">
+              <button type="button" class="remove-image" (click)="removeSelectedImage()">✕</button>
+            </div>
+          </div>
+
+          <!-- Ubicación (opcional para seguimientos) -->
+          <div class="form-group" *ngIf="isFollowUpMode()">
+            <label for="location">Nueva ubicación (opcional)</label>
+            <input
+              id="location"
+              type="text"
+              [(ngModel)]="newPostLocation"
+              name="location"
+              class="form-control"
+              placeholder="Solo si la ubicación cambió"
+            />
+          </div>
+
+          <!-- Botones -->
+          <div class="modal-actions">
+            <button type="button" class="btn btn--secondary" (click)="closeCreateModal()">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn--primary"
+              [disabled]="!newPostTitle().trim() || !newPostContent().trim()"
+            >
+              {{ isFollowUpMode() ? 'Crear Seguimiento' : 'Crear Post' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,45 @@
+/* You can add global styles to this file, and also import other style files */
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Reset global de button demasiado agresivo -> lo adaptamos para no romper componentes */
+button {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Asegurar estilo base para nuestros botones reutilizables */
+button.btn {
+  border: none;
+  background: #e0e0e0;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all .25s ease;
+}
+
+button.btn:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+button.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  background: #f5f5f5;
+  color: #111111;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 300;
+}
+
+:focus {
+  outline: 0;
+}

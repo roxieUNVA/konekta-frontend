@@ -1,0 +1,9 @@
+<ng-container *ngIf="!hideNavbar(); else profileBar">
+	<app-navbar></app-navbar>
+</ng-container>
+<ng-template #profileBar>
+	<div class="profile-top-bar">
+		<button type="button" class="back-btn" (click)="goBackFromProfile()" aria-label="Volver">←</button>
+	</div>
+</ng-template>
+<router-outlet></router-outlet>

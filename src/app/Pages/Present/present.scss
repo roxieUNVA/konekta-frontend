@@ -1,0 +1,9 @@
+:root {
+  --container-padding: 16px;
+}
+
+.present-page {
+  .container {
+    padding: var(--container-padding);
+  }
+}

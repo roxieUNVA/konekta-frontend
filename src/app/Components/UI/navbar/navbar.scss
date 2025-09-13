@@ -1,0 +1,309 @@
+.navbar {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+
+/* Botón hamburguesa */
+.navbar-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 6px;
+  border-radius: 6px;
+  transition: background .25s;
+  position: relative;
+  z-index: 2100; /* sobre el panel móvil */
+
+  &:hover, &:focus-visible {
+    background: rgba(0,0,0,0.05);
+    outline: none;
+  }
+
+  .bar {
+    display: block;
+    width: 24px;
+    height: 2.5px;
+    background: #222831;
+    margin: 5px 0;
+    border-radius: 2px;
+    transition: transform .35s ease, opacity .25s ease, width .25s;
+    transform-origin: center;
+  }
+
+  &[aria-expanded="true"] .bar:nth-child(1) {
+    transform: translateY(7.5px) rotate(45deg);
+  }
+  &[aria-expanded="true"] .bar:nth-child(2) {
+    opacity: 0;
+  }
+  &[aria-expanded="true"] .bar:nth-child(3) {
+    transform: translateY(-7.5px) rotate(-45deg);
+  }
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 12px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}.navbar-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.navbar-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: 1px;
+}
+
+.navbar-menu {
+  display: flex;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.navbar-nav {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 32px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+}
+
+/* Elementos que solo deben aparecer en vista responsive (mobile). */
+.mobile-only { display: none; }
+
+.nav-link {
+  color: #6c757d;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: #000000;
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &.active {
+    color: #000000;
+    font-weight: 600;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.navbar-actions {
+  display: none; /* Ocultamos los botones como solicitaste */
+}
+
+.navbar-user {
+  display: none; /* Ocultamos también el menú de usuario */
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 16px;
+    height: 60px;
+  }
+
+  .navbar-title {
+    font-size: 20px;
+  }
+
+  .navbar-toggle { display: inline-block; }
+
+  /* Panel móvil oculto por defecto */
+  .navbar-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 20px 24px 32px;
+    display: none; /* override desktop flex */
+    flex-direction: column;
+    box-shadow: 0 12px 32px rgba(16,24,40,0.12);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    animation: slideDown .35s ease;
+  }
+  .navbar-menu.open { display: flex; }
+
+  .navbar-nav {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobile-only { display: block; }
+  .nav-button {
+    width: 100%;
+    text-align: left;
+    background: rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #222831;
+    cursor: pointer;
+    transition: background .25s, box-shadow .25s, transform .2s;
+  }
+  .nav-button:hover {
+    background: rgba(0,0,0,0.07);
+  }
+  .nav-button:active { transform: translateY(1px); }
+  .nav-button.logout { color: #c62828; }
+  .nav-button.logout:hover { background: rgba(198,40,40,0.1); }
+
+  .nav-item { width: 100%; }
+  .nav-link {
+    display: block;
+    width: 100%;
+    font-size: 15px;
+    padding: 12px 14px;
+    border-radius: 8px;
+  }
+  .profile-icon { margin-top: 8px; }
+  /* Ocultar avatar (icono de perfil) en mobile; las acciones ya están en la lista */
+  .profile-icon { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .navbar-menu { padding: 16px 18px 28px; }
+  .nav-link { font-size: 14px; padding: 11px 14px; }
+}
+
+// Estilos para el icono de perfil (fuera de media query para que apliquen siempre)
+.profile-icon {
+  display: flex;
+  align-items: center;
+
+}
+
+.profile-link {
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.profile-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  /* colores y tipografía más suaves para integrarse con KONEKTA */
+  border: 1.5px solid rgba(34, 40, 49, 0.6); /* gris oscuro menos agresivo */
+  background: linear-gradient(180deg, #fbfdff 0%, #f1f6ff 100%); /* leve tono azul claro */
+  color: rgba(34, 40, 49, 0.9); /* texto gris oscuro suave */
+  font-size: 1.1rem; /* ligeramente grande */
+  font-weight: 700; /* coincide con .navbar-title */
+  font-family: inherit; /* usa la misma tipografía que el resto del nav */
+  outline: 1px solid rgba(34, 40, 49, 0.08); /* muy sutil */
+  outline-offset: 2px;
+  user-select: none;
+  transition: box-shadow 0.18s, transform 0.12s, background 0.18s;
+}
+
+.profile-link:hover .profile-circle {
+  box-shadow: 0 6px 18px rgba(16,24,40,0.08);
+  transform: translateY(-2px);
+}
+
+/* Dropdown del perfil */
+.profile-dropdown {
+  position: absolute;
+  top: 70px; /* justo debajo del navbar */
+  right: 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(16,24,40,0.06);
+  padding: 10px 0;
+  z-index: 2000;
+  min-width: 200px;
+  border: 1px solid rgba(34,40,49,0.06);
+  /* apariencia tipo mensaje */
+  transform-origin: top right;
+  animation: popIn 120ms ease-out;
+}
+
+.profile-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.profile-dropdown li {
+  padding: 0 12px;
+}
+
+.dropdown-btn {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: rgba(34,40,49,0.7); /* gris más suave por defecto */
+  font-weight: 400; /* sin peso por defecto */
+  font-size: 14px;
+}
+
+.dropdown-btn:hover {
+  background: rgba(0,0,0,0.03);
+  font-weight: 700;
+  color: rgba(34,40,49,0.95);
+}
+
+.logout-btn:hover {
+  color: #c62828; /* rojo suave para logout */
+}
+
+@keyframes popIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

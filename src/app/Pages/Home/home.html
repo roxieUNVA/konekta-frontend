@@ -1,0 +1,192 @@
+<!-- Contenido para usuarios NO autenticados -->
+<div class="home-container" *ngIf="!isAuthenticated">
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Konekta: Conectando Estudiantes Globalmente</h1>
+      <p class="hero-description">Participa en eventos académicos, comparte conocimientos y conecta con estudiantes de diversas instituciones.</p>
+
+      <div class="auth-actions">
+        <app-buttom
+          text="Iniciar sesión"
+          variant="primary"
+          size="large"
+          (onClick)="navigateToLogin()">
+        </app-buttom>
+
+        <app-buttom
+          text="Registrarse"
+          variant="secondary"
+          size="large"
+          (onClick)="navigateToSignup()"
+        >
+        </app-buttom>
+      </div>
+    </div>
+  </div>
+  <div class="public-info">
+    <h3>¿Qué es Konekta?</h3>
+    <p>Konekta es la plataforma donde los estudiantes registran, siguen y evalúan eventos académicos: congresos, ferias, hackathons, seminarios y más. Aquí las experiencias vividas se convierten en conocimiento colectivo y en oportunidades para mejorar futuros encuentros.</p>
+
+    <div class="features">
+      <div class="features-carousel">
+        <div class="feature-item">
+          <h4><img src="ic_fluent_calendar_ltr_24_filled.png" alt="Calendario" class="feature-icon"> Seguimiento inteligente</h4>
+          <p>Guarda eventos en tu radar y lleva un historial de tu participación.</p>
+        </div>
+        <div class="feature-item">
+          <h4><img src="ic_fluent_notepad_person_24_filled.png" alt="Reseñas" class="feature-icon"> Reseñas reales</h4>
+          <p>Comparte cómo fue tu experiencia: organización, valor académico y networking.</p>
+        </div>
+        <div class="feature-item">
+          <h4><img src="ic_fluent_puzzle_piece_24_filled.png" alt="Desafíos" class="feature-icon"> Desafíos & aprendizajes</h4>
+          <p>Documenta retos enfrentados y soluciones aplicadas para que otros aprendan.</p>
+        </div>
+        <div class="feature-item">
+          <h4><img src="ic_fluent_earth_24_filled.png" alt="Comunidad" class="feature-icon"> Comunidad colaborativa</h4>
+          <p>Conecta con estudiantes de otras instituciones y amplía tu perspectiva.</p>
+        </div>
+        <!-- Duplicated for seamless infinite scroll -->
+        <div class="feature-item">
+          <h4><img src="ic_fluent_calendar_ltr_24_filled.png" alt="Calendario" class="feature-icon"> Seguimiento inteligente</h4>
+          <p>Guarda eventos en tu radar y lleva un historial de tu participación.</p>
+        </div>
+        <div class="feature-item">
+          <h4><img src="ic_fluent_notepad_person_24_filled.png" alt="Reseñas" class="feature-icon"> Reseñas reales</h4>
+          <p>Comparte cómo fue tu experiencia: organización, valor académico y networking.</p>
+        </div>
+        <div class="feature-item">
+          <h4><img src="ic_fluent_puzzle_piece_24_filled.png" alt="Desafíos" class="feature-icon"> Desafíos & aprendizajes</h4>
+          <p>Documenta retos enfrentados y soluciones aplicadas para que otros aprendan.</p>
+        </div>
+        <div class="feature-item">
+          <h4><img src="ic_fluent_earth_24_filled.png" alt="Comunidad" class="feature-icon"> Comunidad colaborativa</h4>
+          <p>Conecta con estudiantes de otras instituciones y amplía tu perspectiva.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-actions" style="margin-top:64px; justify-content:center;">
+      <app-buttom
+        text="Explorar eventos"
+        variant="secondary"
+        size="large"
+        (onClick)="navigateToLogin()">
+      </app-buttom>
+      <app-buttom
+        text="Crear mi cuenta"
+        variant="primary"
+        size="large"
+        (onClick)="navigateToSignup()">
+      </app-buttom>
+    </div>
+  </div>
+</div>
+
+<!-- Contenido para usuarios autenticados -->
+<div class="home-container authenticated" *ngIf="isAuthenticated">
+  <div class="welcome-back smart-welcome">
+    <h1>¡Bienvenido {{ user?.name }}!</h1>
+    <p class="subtitle">Explora el nuevo contenido reciente y mantente al día.</p>
+  </div>
+
+  <div class="content-with-board">
+    <div class="main-flow">
+      <!-- Sección de eventos en curso -->
+      <section class="ongoing-events" *ngIf="ongoingEvents().length > 0">
+        <header class="section-head">
+          <h3>🔥 Eventos en curso</h3>
+          <p class="section-subtitle">Los eventos más recientes de la plataforma</p>
+        </header>
+        <div class="ongoing-grid">
+          <div class="ongoing-event" *ngFor="let event of ongoingEvents()">
+            <h4 class="title" (click)="goToEventDetail(event.uuid)">{{ event.title }}</h4>
+            <p class="excerpt">{{ event.content | slice:0:100 }}<span *ngIf="(event.content||'').length>100">...</span></p>
+            <div class="event-meta">
+              <div class="dates" *ngIf="event.startDate && event.endDate">
+                <span class="date-range">
+                  {{ event.startDate | date:'shortDate' }} - {{ event.endDate | date:'shortDate' }}
+                </span>
+              </div>
+              <div class="extra-info">
+                <span class="place" *ngIf="event.location">📍 {{ event.location }}</span>
+                <span class="capacity" *ngIf="event.capacity !== undefined">👥 {{ event.capacity }}</span>
+              </div>
+              <div class="category-info" *ngIf="event.category">
+                <span class="category">#{{ event.category }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sección de eventos recientes -->
+      <section class="recent-posts" *ngIf="filteredPosts().length > 0; else noPosts">
+        <header class="section-head">
+          <h3>📅 Últimos eventos</h3>
+          <p class="section-subtitle">Eventos recientemente publicados</p>
+        </header>
+        <div class="posts-grid">
+          <div class="post-mini" *ngFor="let p of filteredPosts()">
+            <h4 class="title" (click)="goToEventDetail(p.uuid)">{{ p.title }}</h4>
+            <p class="excerpt">{{ p.content | slice:0:120 }}<span *ngIf="(p.content||'').length>120">...</span></p>
+            <div class="meta">
+              <span class="date">{{ p.createdAt | date:'shortDate' }}</span>
+              <div class="category-info" *ngIf="p.category">
+                <span class="category">#{{ p.category }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="more">
+          <button (click)="goToEvents()" class="see-more">Ver todos los eventos</button>
+        </div>
+      </section>
+      <ng-template #noPosts>
+        <div class="empty">Todavía no hay eventos publicados.</div>
+      </ng-template>
+    </div>
+
+    <!-- Pizarra lateral -->
+    <aside class="user-board" *ngIf="user">
+      <div class="board-card head">
+        <h4 class="board-title">Tu actividad</h4>
+        <p class="board-sub">Resumen rápido</p>
+      </div>
+      <div class="board-card kpis">
+        <div class="kpi">
+          <span class="kpi-label">Tus publicaciones</span>
+          <span class="kpi-value">{{ totalUserPosts() }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Tus comentarios</span>
+          <span class="kpi-value">{{ totalUserComments() }}</span>
+        </div>
+      </div>
+      <div class="board-card list" *ngIf="latestUserPosts().length > 0">
+        <h5 class="list-head">Tus últimas publicaciones</h5>
+        <ul class="mini-list">
+          <li *ngFor="let lp of latestUserPosts()" (click)="goToEventDetail(lp.uuid)">
+            <span class="title" [title]="lp.title">{{ lp.title | slice:0:38 }}<span *ngIf="(lp.title||'').length>38">…</span></span>
+            <span class="date">{{ lp.createdAt | date:'shortDate' }}</span>
+          </li>
+        </ul>
+      </div>
+  <div class="board-card list" *ngIf="latestUserComments() && latestUserComments()!.length > 0">
+        <h5 class="list-head">Tus últimos comentarios</h5>
+        <ul class="mini-list">
+          <li *ngFor="let c of latestUserComments()">
+            <span class="title" [title]="c.content">{{ c.content | slice:0:48 }}<span *ngIf="(c.content||'').length>48">…</span></span>
+            <span class="date">{{ c.createdAt | date:'shortDate' }}</span>
+          </li>
+        </ul>
+      </div>
+  <div class="board-card empty-state" *ngIf="!latestUserComments() || (latestUserComments() && latestUserComments()!.length === 0)">
+        <p>Aún no tienes comentarios o no están disponibles públicamente.</p>
+      </div>
+      <div class="board-card empty-state" *ngIf="latestUserPosts().length === 0">
+        <p>Aún no tienes publicaciones.</p>
+      </div>
+    </aside>
+  </div>
+
+</div>

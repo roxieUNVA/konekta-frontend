@@ -1,0 +1,109 @@
+<div class="signup-container">
+	<div class="signup-card">
+		<div class="signup-header">
+			<h1 class="signup-title">Regístrate en Konekta</h1>
+			<p class="signup-slogan">Únete y comienza a conectar oportunidades.</p>
+		</div>
+
+		<form class="signup-form" [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+			<div class="form-group">
+				<label for="name" class="form-label">Nombre</label>
+				<div class="input-wrapper">
+					<svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+						<circle cx="12" cy="7" r="4"></circle>
+					</svg>
+					<input
+						type="text"
+						id="name"
+						formControlName="name"
+						placeholder="Tu nombre"
+						class="form-input"
+						[class.input-error]="name?.invalid && name?.touched">
+				</div>
+				<div *ngIf="name?.invalid && name?.touched" class="error-message">
+					<span *ngIf="name?.errors?.['required']">El nombre es requerido</span>
+					<span *ngIf="name?.errors?.['minlength']">Mínimo 2 caracteres</span>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="email" class="form-label">Email</label>
+				<div class="input-wrapper">
+					<svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+						<polyline points="22,6 12,13 2,6"></polyline>
+					</svg>
+					<input
+						type="email"
+						id="email"
+						formControlName="email"
+						placeholder="Tu email"
+						class="form-input"
+						[class.input-error]="email?.invalid && email?.touched">
+				</div>
+				<div *ngIf="email?.invalid && email?.touched" class="error-message">
+					<span *ngIf="email?.errors?.['required']">El email es requerido</span>
+					<span *ngIf="email?.errors?.['email']">Email inválido</span>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="password" class="form-label">Contraseña</label>
+				<div class="input-wrapper">
+					<svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+						<circle cx="12" cy="16" r="1"></circle>
+						<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+					</svg>
+					<input
+						type="password"
+						id="password"
+						formControlName="password"
+						placeholder="Crea una contraseña"
+						class="form-input"
+						[class.input-error]="password?.invalid && password?.touched">
+				</div>
+				<div *ngIf="password?.invalid && password?.touched" class="error-message">
+					<span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
+					<span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="role" class="form-label">Rol</label>
+				<div class="select-wrapper">
+					<svg class="select-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+						<circle cx="9" cy="7" r="4"></circle>
+						<path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+						<path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+					</svg>
+					<select id="role" formControlName="role" class="form-select">
+						<option value="user">Usuario</option>
+						<option value="admin">Administrador</option>
+					</select>
+					<svg class="select-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<polyline points="6,9 12,15 18,9"></polyline>
+					</svg>
+				</div>
+			</div>
+
+			<app-buttom
+				type="submit"
+				[disabled]="signupForm.invalid"
+				[loading]="isPending"
+				text="Crear cuenta"
+				loadingText="Creando cuenta..."
+				variant="primary"
+				size="medium"
+				class="signup-button"
+				(onClick)="onSubmit()">
+			</app-buttom>
+		</form>
+
+		<div class="login-link">
+			¿Ya tienes cuenta? <a href="/login" class="login-link-text">Inicia sesión aquí</a>
+		</div>
+	</div>
+</div>
