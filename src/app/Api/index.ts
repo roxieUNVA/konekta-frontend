@@ -12,17 +12,14 @@ import { logoutApi } from '../Services/Auth';
 })
 export class KonektaApiService {
   private readonly baseURL: string;
-  private readonly jwtSecret: string;
 
   constructor(private http: HttpClient, private router: Router) {
     this.baseURL = environment.apiUrl;
-    this.jwtSecret = environment.jwtSecret;
   }
 
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'api-key': this.jwtSecret
+      'Content-Type': 'application/json'
     });
 
     // Obtener token del localStorage si existe

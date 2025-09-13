@@ -46,5 +46,3 @@ Thumbs.db
 .env.local
 .env.production
 
-# Angular src environment configuration (avoid committing secrets/keys)
-src/environments/
