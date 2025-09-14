@@ -1,0 +1,59 @@
+.usage-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.card {
+  max-width: 720px;
+  background: #ffffff;
+  border: 1px solid #e3e6ea;
+  border-radius: 12px;
+  padding: 2rem 2.2rem;
+  box-shadow: 0 4px 10px -2px rgba(0,0,0,0.04), 0 2px 4px -1px rgba(0,0,0,0.04);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+h1 {
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.lead {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  color: #444;
+}
+
+.download-link {
+  display: inline-block;
+  background: linear-gradient(135deg, #3b3d3f, #101111);
+  color: #fff;
+  text-decoration: none;
+  padding: 0.85rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background .2s ease, transform .15s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.download-link:hover {
+  background: linear-gradient(135deg, #282d35, #0c0d0e);
+  transform: translateY(-2px);
+}
+.download-link:active {
+  transform: translateY(0);
+}
+
+.hint {
+  margin-top: 1rem;
+  font-size: .85rem;
+  color: #666;
+}
+.hint a {
+  color: #212525;
+  text-decoration: underline;
+}
+.hint a:hover {
+  text-decoration: none;
+}

@@ -1,0 +1,14 @@
+<section class="usage-wrapper">
+  <div class="card">
+    <h1>¿Como usar KONEKTA?</h1>
+    <p class="lead">Aquí puedes obtener el manual de usuario en PDF para aprender cómo usar nuestra aplicación web.</p>
+
+    <a class="download-link" [href]="manualHref" download (click)="onDownload()">
+      📄 Haz click aquí para obtener el manual de usuario
+    </a>
+
+    <p class="hint">Si el enlace no se descarga automáticamente, abre el PDF en una nueva pestaña:
+      <a [href]="manualHref" target="_blank" rel="noopener">abrir manual</a>
+    </p>
+  </div>
+</section>

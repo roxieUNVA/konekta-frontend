@@ -139,7 +139,7 @@ export class Navbar implements OnInit {
   }
 
   navigateToUsage() {
-    this.router.navigate(['/modo-de-uso']);
+    this.router.navigate(['/usage']);
   }
 
   async logout() {

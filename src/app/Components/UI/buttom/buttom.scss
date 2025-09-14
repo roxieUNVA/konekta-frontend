@@ -42,17 +42,17 @@
 
   // Variants
   &.btn-primary {
-    background-color: #007bff;
+    background-color: #111213;
     color: white;
 
     &:hover:not(:disabled):not(.loading) {
   /* Lighter hover instead of darker */
-  background-color: #3399ff;
+  background-color: #242629;
       transform: translateY(-1px);
     }
 
     &:active:not(:disabled):not(.loading) {
-      background-color: #004085;
+      background-color: #252729;
       transform: translateY(0);
     }
   }
@@ -88,3 +88,4 @@
     }
   }
 }
+

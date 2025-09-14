@@ -14,6 +14,7 @@ export const routes: Routes = [
   { path: 'events', loadComponent: () => import('./Pages/Events/events').then(m => m.Events) },
   { path: 'post/:id', loadComponent: () => import('./Pages/PostDetail/post-detail').then(m => m.PostDetail) },
   { path: 'present', loadComponent: () => import('./Pages/Present/present').then(m => m.Present) },
+  { path: 'usage', loadComponent: () => import('./Pages/Usage/usage').then(m => m.UsagePage) },
   { path: 'user', component: UserPage, canActivate: [authGuard], data: { hideNavbar: true } },
 
   { path: '', pathMatch: 'full', redirectTo: 'inicio' }, // Redirige a inicio en lugar de login
